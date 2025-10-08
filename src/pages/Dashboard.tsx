@@ -38,7 +38,6 @@ export default function Dashboard() {
   const eligibilityData = {
     labels: ['Eligible Stable', 'Eligible Decreasing', 'Not Eligible Erratic', 'Not Eligible Low'],
     values: [4, 2, 2, 2],
-    colors: ['hsl(160, 84%, 39%)', 'hsl(250, 95%, 60%)', 'hsl(0, 84%, 60%)', 'hsl(240, 5%, 65%)'],
   };
 
   return (
@@ -101,182 +100,208 @@ export default function Dashboard() {
 
       {/* Meter Group Tiles */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <motion.div variants={item} className="card-hover">
-          <ChartCard
-            title="DSv5 Series"
-            action={
-              <Badge className="bg-success/20 text-success border-success/30 font-semibold">
-                Eligible Stable
-              </Badge>
-            }
-          >
-            <div className="relative h-[220px] -mx-2">
-              <Plot
-                data={[
-                  {
-                    x: dsvData.map(d => d.date),
-                    y: dsvData.map(d => d.totalCost),
-                    type: 'scatter',
-                    mode: 'lines',
-                    fill: 'tozeroy',
-                    fillcolor: 'rgba(139, 92, 246, 0.1)',
-                    line: {
-                      color: 'hsl(250, 95%, 60%)',
-                      width: 3,
-                      shape: 'spline',
-                    },
-                    hovertemplate: '<b>%{x}</b><br>€%{y:,.0f}<extra></extra>',
-                  },
-                ]}
-                layout={{
-                  height: 220,
-                  margin: { l: 50, r: 20, t: 10, b: 40 },
-                  paper_bgcolor: 'transparent',
-                  plot_bgcolor: 'transparent',
-                  xaxis: {
-                    showgrid: false,
-                    color: 'hsl(240, 5%, 65%)',
-                    tickfont: { size: 10 },
-                  },
-                  yaxis: {
-                    showgrid: true,
-                    gridcolor: 'hsl(240, 10%, 18%)',
-                    color: 'hsl(240, 5%, 65%)',
-                    tickfont: { size: 10 },
-                    tickprefix: '€',
-                  },
-                  hovermode: 'x unified',
-                }}
-                config={{ displayModeBar: false, responsive: true }}
-                className="w-full"
-              />
-            </div>
-            <div className="mt-2 p-3 rounded-lg bg-muted/50">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Avg Monthly</span>
-                <span className="font-semibold text-primary">€15,200</span>
-              </div>
-            </div>
-            <Button
-              className="w-full mt-4 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-primary/20"
-              onClick={() => navigate('/forecast')}
+        <motion.div variants={item}>
+          <div style={{ boxShadow: 'var(--shadow-md)' }} className="card-hover">
+            <ChartCard
+              title="DSv5 Series"
+              action={
+                <Badge className="bg-success/10 text-success border border-success/20 font-semibold px-3 py-1">
+                  Eligible Stable
+                </Badge>
+              }
             >
-              View Forecast
-            </Button>
-          </ChartCard>
+              <div className="relative h-[220px] -mx-2">
+                <Plot
+                  data={[
+                    {
+                      x: dsvData.map(d => d.date),
+                      y: dsvData.map(d => d.totalCost),
+                      type: 'scatter',
+                      mode: 'lines',
+                      fill: 'tozeroy',
+                      fillcolor: 'rgba(132, 94, 247, 0.12)',
+                      line: {
+                        color: 'hsl(264, 89%, 62%)',
+                        width: 3,
+                        shape: 'spline',
+                      },
+                      hovertemplate: '<b>%{x}</b><br><b>€%{y:,.0f}</b><extra></extra>',
+                    },
+                  ]}
+                  layout={{
+                    height: 220,
+                    margin: { l: 55, r: 20, t: 10, b: 40 },
+                    paper_bgcolor: 'transparent',
+                    plot_bgcolor: 'transparent',
+                    font: { family: "Inter, sans-serif" },
+                    xaxis: {
+                      showgrid: false,
+                      color: 'hsl(240, 4%, 46%)',
+                      tickfont: { size: 11 },
+                    },
+                    yaxis: {
+                      showgrid: true,
+                      gridcolor: 'hsl(240, 6%, 92%)',
+                      gridwidth: 1,
+                      color: 'hsl(240, 4%, 46%)',
+                      tickfont: { size: 11 },
+                      tickprefix: '€',
+                      tickformat: ',.0f',
+                    },
+                    hovermode: 'x unified',
+                  }}
+                  config={{ displayModeBar: false, responsive: true }}
+                  className="w-full"
+                />
+              </div>
+              <div className="mt-3 p-3 rounded-xl bg-gradient-card border border-primary/10">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground font-medium">Avg Monthly</span>
+                  <span className="font-bold text-primary">€15,200</span>
+                </div>
+              </div>
+              <Button
+                className="btn-hover w-full mt-4 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 font-medium"
+                onClick={() => navigate('/forecast')}
+              >
+                View Forecast
+              </Button>
+            </ChartCard>
+          </div>
         </motion.div>
 
-        <motion.div variants={item} className="card-hover">
-          <ChartCard
-            title="BSv5 Series"
-            action={
-              <Badge className="bg-accent/20 text-accent border-accent/30 font-semibold">
-                Eligible Decreasing
-              </Badge>
-            }
-          >
-            <div className="relative h-[220px] -mx-2">
-              <Plot
-                data={[
-                  {
-                    x: bsvData.map(d => d.date),
-                    y: bsvData.map(d => d.totalCost),
-                    type: 'scatter',
-                    mode: 'lines',
-                    fill: 'tozeroy',
-                    fillcolor: 'rgba(0, 186, 255, 0.1)',
-                    line: {
-                      color: 'hsl(195, 100%, 50%)',
-                      width: 3,
-                      shape: 'spline',
-                    },
-                    hovertemplate: '<b>%{x}</b><br>€%{y:,.0f}<extra></extra>',
-                  },
-                ]}
-                layout={{
-                  height: 220,
-                  margin: { l: 50, r: 20, t: 10, b: 40 },
-                  paper_bgcolor: 'transparent',
-                  plot_bgcolor: 'transparent',
-                  xaxis: {
-                    showgrid: false,
-                    color: 'hsl(240, 5%, 65%)',
-                    tickfont: { size: 10 },
-                  },
-                  yaxis: {
-                    showgrid: true,
-                    gridcolor: 'hsl(240, 10%, 18%)',
-                    color: 'hsl(240, 5%, 65%)',
-                    tickfont: { size: 10 },
-                    tickprefix: '€',
-                  },
-                  hovermode: 'x unified',
-                }}
-                config={{ displayModeBar: false, responsive: true }}
-                className="w-full"
-              />
-            </div>
-            <div className="mt-2 p-3 rounded-lg bg-muted/50">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Avg Monthly</span>
-                <span className="font-semibold text-accent">€22,400</span>
-              </div>
-            </div>
-            <Button
-              className="w-full mt-4 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-primary/20"
-              onClick={() => navigate('/forecast')}
+        <motion.div variants={item}>
+          <div style={{ boxShadow: 'var(--shadow-md)' }} className="card-hover">
+            <ChartCard
+              title="BSv5 Series"
+              action={
+                <Badge className="bg-accent/10 text-accent border border-accent/20 font-semibold px-3 py-1">
+                  Eligible Decreasing
+                </Badge>
+              }
             >
-              View Forecast
-            </Button>
-          </ChartCard>
+              <div className="relative h-[220px] -mx-2">
+                <Plot
+                  data={[
+                    {
+                      x: bsvData.map(d => d.date),
+                      y: bsvData.map(d => d.totalCost),
+                      type: 'scatter',
+                      mode: 'lines',
+                      fill: 'tozeroy',
+                      fillcolor: 'rgba(74, 192, 215, 0.12)',
+                      line: {
+                        color: 'hsl(195, 85%, 55%)',
+                        width: 3,
+                        shape: 'spline',
+                      },
+                      hovertemplate: '<b>%{x}</b><br><b>€%{y:,.0f}</b><extra></extra>',
+                    },
+                  ]}
+                  layout={{
+                    height: 220,
+                    margin: { l: 55, r: 20, t: 10, b: 40 },
+                    paper_bgcolor: 'transparent',
+                    plot_bgcolor: 'transparent',
+                    font: { family: "Inter, sans-serif" },
+                    xaxis: {
+                      showgrid: false,
+                      color: 'hsl(240, 4%, 46%)',
+                      tickfont: { size: 11 },
+                    },
+                    yaxis: {
+                      showgrid: true,
+                      gridcolor: 'hsl(240, 6%, 92%)',
+                      gridwidth: 1,
+                      color: 'hsl(240, 4%, 46%)',
+                      tickfont: { size: 11 },
+                      tickprefix: '€',
+                      tickformat: ',.0f',
+                    },
+                    hovermode: 'x unified',
+                  }}
+                  config={{ displayModeBar: false, responsive: true }}
+                  className="w-full"
+                />
+              </div>
+              <div className="mt-3 p-3 rounded-xl bg-gradient-card border border-accent/10">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground font-medium">Avg Monthly</span>
+                  <span className="font-bold text-accent">€22,400</span>
+                </div>
+              </div>
+              <Button
+                className="btn-hover w-full mt-4 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 font-medium"
+                onClick={() => navigate('/forecast')}
+              >
+                View Forecast
+              </Button>
+            </ChartCard>
+          </div>
         </motion.div>
 
-        <motion.div variants={item} className="card-hover">
-          <ChartCard title="Eligibility Breakdown">
-            <div className="relative h-[220px]">
-              <Plot
-                data={[
-                  {
-                    labels: eligibilityData.labels,
-                    values: eligibilityData.values,
-                    type: 'pie',
-                    marker: {
-                      colors: eligibilityData.colors,
-                      line: { color: 'hsl(240, 10%, 8%)', width: 2 },
+        <motion.div variants={item}>
+          <div style={{ boxShadow: 'var(--shadow-md)' }} className="card-hover">
+            <ChartCard title="Eligibility Breakdown">
+              <div className="relative h-[220px]">
+                <Plot
+                  data={[
+                    {
+                      labels: eligibilityData.labels,
+                      values: eligibilityData.values,
+                      type: 'pie',
+                      marker: {
+                        colors: [
+                          'hsl(160, 84%, 45%)',
+                          'hsl(264, 89%, 62%)',
+                          'hsl(0, 72%, 55%)',
+                          'hsl(240, 4%, 46%)',
+                        ],
+                        line: { color: 'hsl(0, 0%, 100%)', width: 2 },
+                      },
+                      textinfo: 'label+percent',
+                      textposition: 'inside',
+                      textfont: { 
+                        size: 12, 
+                        color: '#fff',
+                        weight: 600,
+                        family: "Inter, sans-serif"
+                      },
+                      hovertemplate: '<b>%{label}</b><br>%{value} groups (%{percent})<extra></extra>',
+                      hole: 0.4,
                     },
-                    textinfo: 'label+percent',
-                    textposition: 'inside',
-                    textfont: { size: 11, color: '#fff' },
-                    hovertemplate: '<b>%{label}</b><br>%{value} groups (%{percent})<extra></extra>',
-                  },
-                ]}
-                layout={{
-                  height: 220,
-                  margin: { l: 0, r: 0, t: 0, b: 0 },
-                  paper_bgcolor: 'transparent',
-                  showlegend: false,
-                }}
-                config={{ displayModeBar: false, responsive: true }}
-                className="w-full"
-              />
-            </div>
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              <div className="p-2 rounded-lg bg-success/20 border border-success/30">
-                <div className="text-xs text-success/80">Eligible</div>
-                <div className="text-lg font-bold text-success">6</div>
+                  ]}
+                  layout={{
+                    height: 220,
+                    margin: { l: 10, r: 10, t: 10, b: 10 },
+                    paper_bgcolor: 'transparent',
+                    showlegend: false,
+                    font: { family: "Inter, sans-serif" },
+                  }}
+                  config={{ displayModeBar: false, responsive: true }}
+                  className="w-full"
+                />
               </div>
-              <div className="p-2 rounded-lg bg-destructive/20 border border-destructive/30">
-                <div className="text-xs text-destructive/80">Not Eligible</div>
-                <div className="text-lg font-bold text-destructive">4</div>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-xl bg-success/10 border border-success/20">
+                  <div className="text-xs text-success/80 font-medium mb-1">Eligible</div>
+                  <div className="text-2xl font-bold text-success">6</div>
+                  <div className="text-xs text-success/60 mt-1">60% of total</div>
+                </div>
+                <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20">
+                  <div className="text-xs text-destructive/80 font-medium mb-1">Not Eligible</div>
+                  <div className="text-2xl font-bold text-destructive">4</div>
+                  <div className="text-xs text-destructive/60 mt-1">40% of total</div>
+                </div>
               </div>
-            </div>
-            <Button
-              className="w-full mt-4 bg-gradient-to-r from-primary to-accent hover:opacity-90 shadow-lg"
-              onClick={() => navigate('/data')}
-            >
-              Analyze New Data
-            </Button>
-          </ChartCard>
+              <Button
+                className="btn-hover w-full mt-4 bg-gradient-to-r from-primary to-accent hover:opacity-90 font-medium"
+                onClick={() => navigate('/data')}
+              >
+                Analyze New Data
+              </Button>
+            </ChartCard>
+          </div>
         </motion.div>
       </div>
     </motion.div>

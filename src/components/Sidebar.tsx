@@ -29,7 +29,8 @@ export function Sidebar() {
         initial={false}
         animate={{ width: collapsed ? 72 : 280 }}
         transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-        className="fixed left-0 top-16 bottom-0 bg-sidebar border-r border-sidebar-border z-40 glass-effect"
+        className="fixed left-0 top-16 bottom-0 bg-sidebar border-r border-sidebar-border z-40"
+        style={{ boxShadow: 'var(--shadow-sm)' }}
       >
         <div className="flex h-full flex-col">
           {/* Main Navigation */}
@@ -41,16 +42,16 @@ export function Sidebar() {
                     <NavLink
                       to={item.url}
                       end={item.url === "/"}
-                      className={({ isActive }) =>
-                        cn(
-                          "flex items-center gap-3 rounded-lg px-3 py-3 text-sidebar-foreground transition-all duration-200 group relative overflow-hidden",
-                          "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                          isActive && "bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-lg glow-effect"
-                        )
-                      }
                     >
                       {({ isActive }) => (
-                        <>
+                        <div 
+                          className={cn(
+                            "flex items-center gap-3 rounded-xl px-3 py-3 text-sidebar-foreground transition-all duration-200 group relative overflow-hidden",
+                            "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:scale-105",
+                            isActive && "bg-sidebar-accent text-sidebar-accent-foreground font-semibold"
+                          )}
+                          style={isActive ? { boxShadow: '0 0 20px hsl(var(--primary) / 0.15)' } : undefined}
+                        >
                           <item.icon className={cn(
                             "h-5 w-5 flex-shrink-0 transition-transform duration-200",
                             "group-hover:scale-110",
@@ -76,7 +77,7 @@ export function Sidebar() {
                               transition={{ type: "spring", stiffness: 500, damping: 30 }}
                             />
                           )}
-                        </>
+                        </div>
                       )}
                     </NavLink>
                   </TooltipTrigger>

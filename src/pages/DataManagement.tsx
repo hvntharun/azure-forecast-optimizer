@@ -42,11 +42,23 @@ export default function DataManagement() {
 
   const getEligibilityBadge = (category: string, cost: number) => {
     if (cost >= 20000) {
-      return <Badge className="bg-success">Eligible &gt;€20K</Badge>;
+      return (
+        <Badge className="bg-success/10 text-success border border-success/20 font-medium px-3 py-1">
+          Eligible &gt;€20K
+        </Badge>
+      );
     } else if (cost >= 12000) {
-      return <Badge className="bg-success">Eligible &gt;€12K</Badge>;
+      return (
+        <Badge className="bg-success/10 text-success border border-success/20 font-medium px-3 py-1">
+          Eligible &gt;€12K
+        </Badge>
+      );
     } else {
-      return <Badge variant="secondary">Review Needed</Badge>;
+      return (
+        <Badge className="bg-muted text-muted-foreground border border-border font-medium px-3 py-1">
+          Review Needed
+        </Badge>
+      );
     }
   };
 
@@ -62,12 +74,12 @@ export default function DataManagement() {
       </div>
 
       {/* Upload Section */}
-      <Card>
+      <Card style={{ boxShadow: 'var(--shadow-md)' }}>
         <CardHeader>
           <CardTitle>Upload CSV Data</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="border-2 border-dashed border-primary/50 rounded-xl p-12 text-center hover:border-primary transition-colors">
+          <div className="relative border-2 border-dashed border-primary/40 rounded-2xl p-16 text-center hover:border-primary transition-all duration-300 hover:bg-primary/5 group">
             <input
               type="file"
               id="file-upload"
@@ -76,26 +88,38 @@ export default function DataManagement() {
               onChange={handleFileUpload}
             />
             <label htmlFor="file-upload" className="cursor-pointer">
-              <Upload className="h-12 w-12 mx-auto mb-4 text-primary" />
-              <p className="text-lg font-medium mb-2">
+              <div className="relative inline-block mb-6">
+                <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl group-hover:bg-primary/30 transition-all"></div>
+                <Upload className="relative h-16 w-16 mx-auto text-primary group-hover:scale-110 transition-transform" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">
                 Drag & drop your CSV file here
-              </p>
-              <p className="text-sm text-muted-foreground mb-4">
-                or click to browse
+              </h3>
+              <p className="text-sm text-muted-foreground mb-6">
+                or click to browse • Supports .csv files up to 50MB
               </p>
               <Button
-                className="bg-accent hover:bg-accent/90"
+                className="btn-hover bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 font-medium px-8"
                 onClick={() => document.getElementById('file-upload')?.click()}
                 disabled={uploading}
               >
-                {uploading ? "Uploading..." : "Upload & Analyze"}
+                {uploading ? "Processing..." : "Upload & Analyze"}
               </Button>
             </label>
           </div>
           {uploading && (
-            <div className="mt-4">
-              <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                <div className="h-full bg-accent animate-pulse w-3/4" />
+            <div className="mt-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">Processing data...</span>
+                <span className="text-sm text-muted-foreground">75%</span>
+              </div>
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <motion.div 
+                  initial={{ width: "0%" }}
+                  animate={{ width: "75%" }}
+                  transition={{ duration: 0.5 }}
+                  className="h-full bg-gradient-to-r from-accent to-primary rounded-full"
+                />
               </div>
             </div>
           )}
@@ -103,11 +127,11 @@ export default function DataManagement() {
       </Card>
 
       {/* Data Table */}
-      <Card>
+      <Card style={{ boxShadow: 'var(--shadow-md)' }}>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Historical Data</CardTitle>
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -125,24 +149,24 @@ export default function DataManagement() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="rounded-lg border overflow-hidden">
-            <Table>
+          <div className="rounded-xl border overflow-hidden" style={{ boxShadow: 'var(--shadow-sm)' }}>
+            <Table className="table-zebra">
               <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Meter Category</TableHead>
-                  <TableHead className="text-right">Quantity</TableHead>
-                  <TableHead className="text-right">Total Cost</TableHead>
-                  <TableHead>Eligibility</TableHead>
+                <TableRow className="bg-muted/50">
+                  <TableHead className="font-semibold">Date</TableHead>
+                  <TableHead className="font-semibold">Meter Category</TableHead>
+                  <TableHead className="text-right font-semibold">Quantity</TableHead>
+                  <TableHead className="text-right font-semibold">Total Cost</TableHead>
+                  <TableHead className="font-semibold">Eligibility</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredData.slice(0, 10).map((row, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell className="font-medium">{row.date}</TableCell>
-                    <TableCell>{row.meterSubCategory}</TableCell>
-                    <TableCell className="text-right">{row.totalQuantity}</TableCell>
-                    <TableCell className="text-right text-primary font-semibold">
+                  <TableRow key={idx} className="hover:bg-muted/30 transition-colors">
+                    <TableCell className="font-semibold">{row.date}</TableCell>
+                    <TableCell className="font-medium">{row.meterSubCategory}</TableCell>
+                    <TableCell className="text-right font-medium">{row.totalQuantity}</TableCell>
+                    <TableCell className="text-right text-primary font-bold text-base">
                       €{row.totalCost.toLocaleString()}
                     </TableCell>
                     <TableCell>

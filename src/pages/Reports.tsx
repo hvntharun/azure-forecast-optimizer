@@ -56,7 +56,7 @@ export default function Reports() {
       </div>
 
       {/* Savings Chart */}
-      <Card>
+      <Card className="card-hover" style={{ boxShadow: 'var(--shadow-md)' }}>
         <CardHeader>
           <CardTitle>Projected Savings Over Time</CardTitle>
         </CardHeader>
@@ -69,8 +69,17 @@ export default function Reports() {
                 name: "Without Reservations",
                 type: "scatter",
                 mode: "lines+markers",
-                line: { color: "#000099", width: 3 },
-                marker: { size: 8 },
+                line: { 
+                  color: "hsl(264, 89%, 62%)", 
+                  width: 3,
+                  shape: "spline"
+                },
+                marker: { 
+                  size: 10,
+                  color: "hsl(264, 89%, 62%)",
+                  line: { width: 2, color: "#fff" }
+                },
+                fill: "none",
               },
               {
                 x: savingsData.months,
@@ -78,31 +87,84 @@ export default function Reports() {
                 name: "With Reservations",
                 type: "scatter",
                 mode: "lines+markers",
-                line: { color: "#10B981", width: 3 },
-                marker: { size: 8 },
+                line: { 
+                  color: "hsl(160, 84%, 45%)", 
+                  width: 3,
+                  shape: "spline"
+                },
+                marker: { 
+                  size: 10,
+                  color: "hsl(160, 84%, 45%)",
+                  line: { width: 2, color: "#fff" }
+                },
+                fill: "tonexty",
+                fillcolor: "rgba(16, 185, 129, 0.1)",
               },
             ]}
             layout={{
-              height: 400,
-              margin: { l: 60, r: 40, t: 20, b: 60 },
+              height: 450,
+              margin: { l: 70, r: 40, t: 20, b: 70 },
               paper_bgcolor: "transparent",
               plot_bgcolor: "transparent",
+              font: {
+                family: "Inter, sans-serif",
+                size: 13,
+                color: "hsl(240, 10%, 46%)"
+              },
               xaxis: {
                 showgrid: false,
-                color: "#888",
-                title: "Month",
+                color: "hsl(240, 10%, 46%)",
+                title: {
+                  text: "Month",
+                  font: { size: 14, weight: 600 }
+                },
+                tickfont: { size: 12 }
               },
               yaxis: {
                 showgrid: true,
-                gridcolor: "#333",
-                color: "#888",
-                title: "Cost (€)",
+                gridcolor: "hsl(240, 6%, 92%)",
+                gridwidth: 1,
+                color: "hsl(240, 10%, 46%)",
+                title: {
+                  text: "Cost (€)",
+                  font: { size: 14, weight: 600 }
+                },
+                tickfont: { size: 12 },
+                tickformat: "€,.0f"
               },
-              legend: { x: 0, y: 1.1, orientation: "h" },
+              legend: { 
+                x: 0.02, 
+                y: 1.15, 
+                orientation: "h",
+                font: { size: 13, weight: 500 }
+              },
+              hovermode: "x unified",
             }}
-            config={{ displayModeBar: true, displaylogo: false }}
+            config={{ 
+              displayModeBar: true, 
+              displaylogo: false,
+              responsive: true 
+            }}
             className="w-full"
           />
+          
+          {/* Insights Card */}
+          <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-success/10 to-accent/10 border border-success/20">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5">
+                <svg className="w-5 h-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h4 className="font-semibold text-sm mb-1">Projected Annual Savings: €36,000</h4>
+                <p className="text-sm text-muted-foreground">
+                  Implementing reservations across eligible resources could reduce costs by ~32% year-over-year. 
+                  Consider scaling D5v5 and B5v5 series for maximum impact.
+                </p>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 

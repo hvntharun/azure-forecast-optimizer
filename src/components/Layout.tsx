@@ -21,7 +21,7 @@ export function Layout({ children }: LayoutProps) {
       <Header />
       <Sidebar />
       <main className="ml-[72px] mt-16 min-h-[calc(100vh-4rem)] transition-all duration-300">
-        <div className="p-8">{children}</div>
+        <div className="px-6 py-8 max-w-[1600px] mx-auto">{children}</div>
         <Footer />
       </main>
     </div>

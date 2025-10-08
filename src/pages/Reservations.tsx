@@ -98,15 +98,15 @@ export default function Reservations() {
       </div>
 
       {/* Reservations Table */}
-      <Card>
+      <Card style={{ boxShadow: 'var(--shadow-md)' }}>
         <CardHeader>
           <CardTitle>Eligible Meter Categories</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="rounded-lg border overflow-hidden">
-            <Table>
+          <div className="rounded-xl border overflow-hidden" style={{ boxShadow: 'var(--shadow-sm)' }}>
+            <Table className="table-zebra">
               <TableHeader>
-                <TableRow>
+                <TableRow className="bg-muted/50">
                   <TableHead className="w-12">
                     <Checkbox
                       checked={selected.length === mockReservations.length}
@@ -119,42 +119,49 @@ export default function Reservations() {
                       }}
                     />
                   </TableHead>
-                  <TableHead>Meter Group</TableHead>
-                  <TableHead>Eligibility Reason</TableHead>
-                  <TableHead className="text-right">Projected Cost</TableHead>
-                  <TableHead className="text-right">Rec. Hours</TableHead>
-                  <TableHead className="text-right">Est. Savings</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="font-semibold">Meter Group</TableHead>
+                  <TableHead className="font-semibold">Eligibility Reason</TableHead>
+                  <TableHead className="text-right font-semibold">Projected Cost</TableHead>
+                  <TableHead className="text-right font-semibold">Rec. Hours</TableHead>
+                  <TableHead className="text-right font-semibold">Est. Savings</TableHead>
+                  <TableHead className="text-right font-semibold">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {mockReservations.map((res, idx) => (
-                  <TableRow key={idx}>
+                  <TableRow key={idx} className="hover:bg-muted/30 transition-colors">
                     <TableCell>
                       <Checkbox
                         checked={selected.includes(idx)}
                         onCheckedChange={() => toggleSelection(idx)}
                       />
                     </TableCell>
-                    <TableCell className="font-medium">{res.group}</TableCell>
+                    <TableCell className="font-semibold">{res.group}</TableCell>
                     <TableCell>
-                      <Badge className="bg-success text-white">
+                      <Badge 
+                        className="bg-success/10 text-success border border-success/20 font-medium px-3 py-1"
+                      >
                         {res.reason}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right text-primary font-semibold">
+                    <TableCell className="text-right text-primary font-bold text-base">
                       €{res.projected.toLocaleString()}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right font-medium">
                       {res.hours.toLocaleString()}
                     </TableCell>
-                    <TableCell className="text-right text-success font-semibold">
-                      {res.savings}%
+                    <TableCell className="text-right">
+                      <span className="inline-flex items-center gap-1 text-success font-bold text-base">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                        {res.savings}%
+                      </span>
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
                         size="sm"
-                        className="bg-accent hover:bg-accent/90"
+                        className="btn-hover bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 font-medium"
                         onClick={() => handleGenerate(res)}
                       >
                         Generate CSV

@@ -21,15 +21,17 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Layout><Dashboard /></Layout>} />
-            <Route path="/data" element={<Layout><DataManagement /></Layout>} />
-            <Route path="/forecast" element={<Layout><Forecasting /></Layout>} />
-            <Route path="/reservations" element={<Layout><Reservations /></Layout>} />
-            <Route path="/reports" element={<Layout><Reports /></Layout>} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/data" element={<DataManagement />} />
+              <Route path="/forecast" element={<Forecasting />} />
+              <Route path="/reservations" element={<Reservations />} />
+              <Route path="/reports" element={<Reports />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Layout>
         </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>

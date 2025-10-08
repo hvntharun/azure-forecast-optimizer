@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { useLocation } from "react-router-dom";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
 import { Footer } from "./Footer";
@@ -8,6 +9,13 @@ interface LayoutProps {
 }
 
 export function Layout({ children }: LayoutProps) {
+  const location = useLocation();
+  const isNotFoundPage = !['/', '/data', '/forecast', '/reservations', '/reports'].includes(location.pathname);
+
+  if (isNotFoundPage) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="min-h-screen w-full">
       <Header />

@@ -20,7 +20,7 @@ export function Layout({ children }: LayoutProps) {
     <div className="min-h-screen w-full">
       <Header />
       <Sidebar />
-      <main className="ml-64 mt-16 min-h-[calc(100vh-4rem)]">
+      <main className="ml-[72px] mt-16 min-h-[calc(100vh-4rem)] transition-all duration-300">
         <div className="p-8">{children}</div>
         <Footer />
       </main>

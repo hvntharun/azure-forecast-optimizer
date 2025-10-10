@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 const dashboardOptions = [
   {
     id: "azure-vm",
-    title: "Azure VM Dashboard",
+    title: "Azure VM",
     description: "Monitor and optimize your Azure Virtual Machine costs and reservations",
     icon: Cloud,
     gradient: "from-primary/20 via-accent/10 to-primary/5",
@@ -14,7 +14,7 @@ const dashboardOptions = [
   },
   {
     id: "databricks",
-    title: "Databricks Dashboard",
+    title: "Databricks",
     description: "Track Databricks usage, costs, and optimization opportunities",
     icon: Database,
     gradient: "from-accent/20 via-primary/10 to-accent/5",
@@ -23,7 +23,7 @@ const dashboardOptions = [
   },
   {
     id: "azure-storage",
-    title: "Azure Storage",
+    title: "Storage",
     description: "Analyze storage costs, usage patterns, and savings potential",
     icon: HardDrive,
     gradient: "from-primary/15 via-accent/15 to-primary/10",
@@ -46,10 +46,10 @@ export default function Landing() {
           className="text-center mb-16"
         >
           <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-            Cloud Cost Optimization
+            Dashboard
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Select a dashboard to view insights, forecasts, and optimization recommendations
+            Cloud Cost Insights & Forecasting
           </p>
         </motion.div>
 

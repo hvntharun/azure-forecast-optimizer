@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +20,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { generateMockChartData, ClassificationType } from "@/lib/classificationData";
+import { 
+  generateMockChartData, 
+  ClassificationType, 
+  ClassificationCategory,
+  classificationCards,
+  servicesByCategory
+} from "@/lib/classificationData";
 
 const steps = [
   { id: 1, name: "Data Loaded", status: "complete" },
@@ -31,8 +37,19 @@ const steps = [
 
 export default function Forecasting() {
   const location = useLocation();
-  const state = location.state as { cardId?: ClassificationType; service?: string } | null;
+  const navigate = useNavigate();
+  const state = location.state as { 
+    category?: ClassificationCategory; 
+    cardId?: ClassificationType; 
+    service?: string 
+  } | null;
 
+  const [selectedCategory, setSelectedCategory] = useState<ClassificationCategory>(
+    state?.category || "Analytics"
+  );
+  const [selectedCard, setSelectedCard] = useState<ClassificationType>(
+    state?.cardId || "stable-high"
+  );
   const [selectedMeter, setSelectedMeter] = useState(state?.service || "DSv5 Series");
   const [eligibility, setEligibility] = useState<any>(null);
   const [forecast, setForecast] = useState<any>(null);
@@ -40,14 +57,17 @@ export default function Forecasting() {
   const [currentStep, setCurrentStep] = useState(2);
   const [chartData, setChartData] = useState<any[]>([]);
 
-  // If coming from Dashboard with card selection, generate chart data
+  // Generate chart data when selections change
   useEffect(() => {
-    if (state?.cardId && state?.service) {
-      const data = generateMockChartData(state.service, state.cardId);
+    if (selectedCard && selectedMeter) {
+      const data = generateMockChartData(selectedMeter, selectedCard);
       setChartData(data);
-      setSelectedMeter(state.service);
     }
-  }, [state]);
+  }, [selectedCard, selectedMeter]);
+
+  // Get available services for current category
+  const availableServices = servicesByCategory[selectedCategory];
+  const currentCardServices = availableServices?.[selectedCard] || [];
 
   const handleCheckEligibility = async () => {
     setLoading(true);
@@ -142,39 +162,84 @@ export default function Forecasting() {
           <CardTitle>Forecast Configuration</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {state?.cardId && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="text-sm font-medium mb-2 block text-muted-foreground">
-                  Category
-                </label>
-                <div className="p-3 bg-muted rounded-md">
-                  <p className="font-medium">Analytics</p>
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block text-muted-foreground">
-                  Classification Type
-                </label>
-                <div className="p-3 bg-muted rounded-md">
-                  <p className="font-medium text-sm">
-                    {state.cardId === 'stable-high' && 'Stable High Spend (>12K)'}
-                    {state.cardId === 'high-spend' && 'High Spend (>20K)'}
-                    {state.cardId === 'unstable' && 'Unstable/Erratic (>12K)'}
-                    {state.cardId === 'low-spend' && 'Low Spend (<12K)'}
-                  </p>
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block text-muted-foreground">
-                  Selected Service
-                </label>
-                <div className="p-3 bg-muted rounded-md">
-                  <p className="font-medium">{selectedMeter}</p>
-                </div>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block text-muted-foreground">
+                Category
+              </label>
+              <Select
+                value={selectedCategory}
+                onValueChange={(value) => {
+                  setSelectedCategory(value as ClassificationCategory);
+                  // Reset to first available service when category changes
+                  const newServices = servicesByCategory[value as ClassificationCategory];
+                  if (newServices?.[selectedCard]?.[0]) {
+                    setSelectedMeter(newServices[selectedCard][0]);
+                  }
+                }}
+              >
+                <SelectTrigger className="w-full bg-card">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border z-50">
+                  <SelectItem value="Analytics">Analytics</SelectItem>
+                  <SelectItem value="XGBoost">Supervised - XGBoost</SelectItem>
+                  <SelectItem value="Random Forest">Supervised - Random Forest</SelectItem>
+                  <SelectItem value="Decision Trees">Supervised - Decision Trees</SelectItem>
+                  <SelectItem value="KMeans">Unsupervised - KMeans</SelectItem>
+                  <SelectItem value="DBScan">Unsupervised - DBScan</SelectItem>
+                  <SelectItem value="Hierarchical">Unsupervised - Hierarchical</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          )}
+            <div>
+              <label className="text-sm font-medium mb-2 block text-muted-foreground">
+                Classification Type
+              </label>
+              <Select
+                value={selectedCard}
+                onValueChange={(value) => {
+                  setSelectedCard(value as ClassificationType);
+                  // Reset to first available service when card changes
+                  const newServices = availableServices[value as ClassificationType];
+                  if (newServices?.[0]) {
+                    setSelectedMeter(newServices[0]);
+                  }
+                }}
+              >
+                <SelectTrigger className="w-full bg-card">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border z-50">
+                  {classificationCards.map((card) => (
+                    <SelectItem key={card.id} value={card.id}>
+                      {card.shortLabel}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block text-muted-foreground">
+                Selected Service
+              </label>
+              <Select
+                value={selectedMeter}
+                onValueChange={setSelectedMeter}
+              >
+                <SelectTrigger className="w-full bg-card">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border z-50">
+                  {currentCardServices.map((service) => (
+                    <SelectItem key={service} value={service}>
+                      {service}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
           <div className="flex gap-2">
             <Button

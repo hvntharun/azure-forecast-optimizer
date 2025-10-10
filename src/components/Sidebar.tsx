@@ -1,4 +1,4 @@
-import { Home, Database, TrendingUp, ShoppingCart, FileText, ChevronRight, Clock } from "lucide-react";
+import { Home, Database, TrendingUp, ShoppingCart, FileText, ChevronRight, Clock, BarChart3 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
 const navItems = [
-  { title: "Dashboard", url: "/", icon: Home },
+  { title: "Home", url: "/", icon: Home },
+  { title: "Dashboard", url: "/dashboard/azure-vm", icon: BarChart3 },
   { title: "Data", url: "/data", icon: Database },
   { title: "Forecasting", url: "/forecast", icon: TrendingUp },
   { title: "Reservations", url: "/reservations", icon: ShoppingCart },

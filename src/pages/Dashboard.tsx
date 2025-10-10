@@ -116,7 +116,7 @@ export default function Dashboard() {
       </motion.div>
 
       {/* Classification Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {classificationCards.map((card) => (
           <motion.div key={card.id} variants={item}>
             <ClassificationCard

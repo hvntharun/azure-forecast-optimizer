@@ -139,52 +139,69 @@ export default function Forecasting() {
       {/* Filters & Controls */}
       <Card>
         <CardHeader>
-          <CardTitle>Configuration</CardTitle>
+          <CardTitle>Forecast Configuration</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <label className="text-sm font-medium mb-2 block">
-                Meter Category
-              </label>
-              <Select value={selectedMeter} onValueChange={setSelectedMeter}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="DSv5 Series">DSv5 Series</SelectItem>
-                  <SelectItem value="BSv5 Series">BSv5 Series</SelectItem>
-                  <SelectItem value="FSv2 Series">FSv2 Series</SelectItem>
-                  <SelectItem value="Esv4 Series">Esv4 Series</SelectItem>
-                </SelectContent>
-              </Select>
+          {state?.cardId && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block text-muted-foreground">
+                  Category
+                </label>
+                <div className="p-3 bg-muted rounded-md">
+                  <p className="font-medium">Analytics</p>
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block text-muted-foreground">
+                  Classification Type
+                </label>
+                <div className="p-3 bg-muted rounded-md">
+                  <p className="font-medium text-sm">
+                    {state.cardId === 'stable-high' && 'Stable High Spend (>12K)'}
+                    {state.cardId === 'high-spend' && 'High Spend (>20K)'}
+                    {state.cardId === 'unstable' && 'Unstable/Erratic (>12K)'}
+                    {state.cardId === 'low-spend' && 'Low Spend (<12K)'}
+                  </p>
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block text-muted-foreground">
+                  Selected Service
+                </label>
+                <div className="p-3 bg-muted rounded-md">
+                  <p className="font-medium">{selectedMeter}</p>
+                </div>
+              </div>
             </div>
-            <div className="flex gap-2 items-end">
-              <Button
-                onClick={handleCheckEligibility}
-                disabled={loading}
-                variant="outline"
-              >
-                {loading ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : null}
-                Check Eligibility
-              </Button>
-              <Button
-                onClick={handleGenerateForecast}
-                disabled={loading || !isEligible}
-                className="bg-accent hover:bg-accent/90"
-              >
-                {loading ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : null}
-                Generate Forecast
-              </Button>
-            </div>
+          )}
+
+          <div className="flex gap-2">
+            <Button
+              onClick={handleCheckEligibility}
+              disabled={loading}
+              variant="outline"
+              className="flex-1"
+            >
+              {loading ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : null}
+              Check Eligibility
+            </Button>
+            <Button
+              onClick={handleGenerateForecast}
+              disabled={loading || !isEligible}
+              className="flex-1 bg-accent hover:bg-accent/90"
+            >
+              {loading ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : null}
+              Generate Forecast
+            </Button>
           </div>
 
           {eligibility && (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
               <Badge
                 className={
                   isEligible
@@ -194,26 +211,11 @@ export default function Forecasting() {
               >
                 {eligibility.status}
               </Badge>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="ghost" size="sm">
-                    View Details
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent>
-                  <div className="space-y-2">
-                    <p className="text-sm">
-                      <strong>Total Cost:</strong> €{eligibility.total.toLocaleString()}
-                    </p>
-                    <p className="text-sm">
-                      <strong>Variance:</strong> {eligibility.variance}%
-                    </p>
-                    <p className="text-sm">
-                      <strong>Trend:</strong> {eligibility.trend}
-                    </p>
-                  </div>
-                </PopoverContent>
-              </Popover>
+              <div className="flex-1 text-sm text-muted-foreground">
+                <strong>Total Cost:</strong> €{eligibility.total.toLocaleString()} | 
+                <strong> Variance:</strong> {eligibility.variance}% | 
+                <strong> Trend:</strong> {eligibility.trend}
+              </div>
             </div>
           )}
         </CardContent>

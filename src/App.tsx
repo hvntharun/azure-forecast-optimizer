@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Layout } from "@/components/Layout";
+import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import DataManagement from "./pages/DataManagement";
 import Forecasting from "./pages/Forecasting";
@@ -23,7 +24,10 @@ const App = () => (
         <BrowserRouter>
           <Layout>
             <Routes>
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/" element={<Landing />} />
+              <Route path="/dashboard/azure-vm" element={<Dashboard />} />
+              <Route path="/dashboard/databricks" element={<Dashboard />} />
+              <Route path="/dashboard/azure-storage" element={<Dashboard />} />
               <Route path="/data" element={<DataManagement />} />
               <Route path="/forecast" element={<Forecasting />} />
               <Route path="/reservations" element={<Reservations />} />

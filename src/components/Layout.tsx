@@ -10,9 +10,15 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const location = useLocation();
-  const isNotFoundPage = !['/', '/data', '/forecast', '/reservations', '/reports'].includes(location.pathname);
+  const validRoutes = ['/', '/dashboard/azure-vm', '/dashboard/databricks', '/dashboard/azure-storage', '/data', '/forecast', '/reservations', '/reports'];
+  const isValidRoute = validRoutes.includes(location.pathname);
+  const isLandingPage = location.pathname === '/';
 
-  if (isNotFoundPage) {
+  if (!isValidRoute) {
+    return <>{children}</>;
+  }
+
+  if (isLandingPage) {
     return <>{children}</>;
   }
 

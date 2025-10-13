@@ -71,8 +71,9 @@ export function ClassificationCard({
             <p className="text-xs text-muted-foreground mt-1">{card.description}</p>
           </div>
           <Select value={service} onValueChange={setService}>
-            <SelectTrigger className="w-[140px] h-8">
-              <ChevronDown className="h-4 w-4" />
+            <SelectTrigger className="w-auto h-8 px-2 gap-1">
+              {service && <span className="text-xs">{service}</span>}
+              <ChevronDown className="h-3 w-3" />
             </SelectTrigger>
             <SelectContent className="glass-effect max-h-[300px]">
               <SelectItem value="All MeterGroups">All MeterGroups</SelectItem>

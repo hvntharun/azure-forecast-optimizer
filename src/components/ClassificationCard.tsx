@@ -66,16 +66,15 @@ export function ClassificationCard({
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
                 <p className="text-sm">{card.fullLabel}</p>
+                <p className="text-xs text-muted-foreground mt-1">{card.description}</p>
               </TooltipContent>
             </Tooltip>
-            <p className="text-xs text-muted-foreground mt-1">{card.description}</p>
           </div>
           <Select value={service} onValueChange={setService}>
-            <SelectTrigger className="w-auto h-8 px-2 gap-1">
+            <SelectTrigger className="w-auto h-8 px-2">
               {service && <span className="text-xs">{service}</span>}
-              <ChevronDown className="h-3 w-3" />
             </SelectTrigger>
-            <SelectContent className="glass-effect max-h-[300px]">
+            <SelectContent className="glass-effect max-h-[300px] bg-background z-50">
               <SelectItem value="All MeterGroups">All MeterGroups</SelectItem>
               {services.map((s) => (
                 <SelectItem key={s} value={s}>

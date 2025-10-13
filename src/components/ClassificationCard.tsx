@@ -62,7 +62,7 @@ export function ClassificationCard({
           <div className="flex-1">
             <Tooltip>
               <TooltipTrigger asChild>
-                <CardTitle className="text-lg cursor-help">{card.shortLabel}</CardTitle>
+                <CardTitle className="text-lg">{card.shortLabel}</CardTitle>
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
                 <p className="text-sm">{card.fullLabel}</p>

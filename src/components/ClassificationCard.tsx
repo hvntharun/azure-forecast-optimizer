@@ -70,20 +70,9 @@ export function ClassificationCard({
             </Tooltip>
             <p className="text-xs text-muted-foreground mt-1">{card.description}</p>
           </div>
-          <Badge className={`${card.badgeClass} border font-semibold shrink-0`}>
-            {isEligible ? 'Eligible' : 'Not Eligible'}
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Service Selector */}
-        <div>
-          <label className="text-xs font-medium text-muted-foreground mb-2 block">
-            Service
-          </label>
           <Select value={service} onValueChange={setService}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select service" />
+            <SelectTrigger className="w-[140px] h-8">
+              <ChevronDown className="h-4 w-4" />
             </SelectTrigger>
             <SelectContent className="glass-effect max-h-[300px]">
               <SelectItem value="All MeterGroups">All MeterGroups</SelectItem>
@@ -95,6 +84,11 @@ export function ClassificationCard({
             </SelectContent>
           </Select>
         </div>
+        <Badge className={`${card.badgeClass} border font-semibold mt-2 w-fit`}>
+          {isEligible ? 'Eligible' : 'Not Eligible'}
+        </Badge>
+      </CardHeader>
+      <CardContent className="space-y-4">
 
         {/* Mini Chart */}
         <div className="h-[120px] -mx-2">

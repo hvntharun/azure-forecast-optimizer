@@ -115,79 +115,77 @@ export default function Dashboard() {
         </div>
       </motion.div>
 
-      {/* Classification Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {classificationCards.map((card) => (
-          <motion.div key={card.id} variants={item}>
-            <ClassificationCard
-              card={card}
-              services={services[card.id]}
-              category={selectedCategory}
-              onView={handleViewCard}
-            />
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Pie Chart */}
-      <motion.div variants={item}>
-        <div style={{ boxShadow: 'var(--shadow-md)' }} className="card-hover p-6 bg-card rounded-2xl border border-border">
-          <h3 className="text-xl font-bold mb-4">Eligibility Breakdown</h3>
-          <div className="grid md:grid-cols-2 gap-6 items-center">
-            <div className="relative h-[300px]">
-              <Plot
-                data={[
-                  {
-                    labels: classificationCards.map(c => c.shortLabel),
-                    values: classificationCards.map(c => services[c.id].length),
-                    type: 'pie',
-                    marker: {
-                      colors: classificationCards.map(c => c.color),
-                      line: { color: 'hsl(0, 0%, 100%)', width: 2 },
-                    },
-                    textinfo: 'label+percent',
-                    textposition: 'inside',
-                    textfont: { 
-                      size: 11, 
-                      color: '#fff',
-                      weight: 600,
-                      family: "Inter, sans-serif"
-                    },
-                    hovertemplate: '<b>%{label}</b><br>%{value} services (%{percent})<extra></extra>',
-                    hole: 0.45,
-                  },
-                ]}
-                layout={{
-                  height: 300,
-                  margin: { l: 10, r: 10, t: 10, b: 10 },
-                  paper_bgcolor: 'transparent',
-                  showlegend: false,
-                  font: { family: "Inter, sans-serif" },
-                }}
-                config={{ displayModeBar: false, responsive: true }}
-                className="w-full"
+      {/* Classification Cards and Pie Chart */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left side - Classification Cards in 2x2 grid */}
+        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+          {classificationCards.map((card) => (
+            <motion.div key={card.id} variants={item}>
+              <ClassificationCard
+                card={card}
+                services={services[card.id]}
+                category={selectedCategory}
+                onView={handleViewCard}
               />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-4 rounded-xl bg-success/10 border border-success/20">
-                <div className="text-xs text-success/80 font-medium mb-1">Eligible</div>
-                <div className="text-3xl font-bold text-success">{stats.eligible}</div>
-                <div className="text-xs text-success/60 mt-1">{stats.eligiblePercent}% of total</div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Right side - Pie Chart */}
+        <motion.div variants={item} className="lg:col-span-1">
+          <div style={{ boxShadow: 'var(--shadow-md)' }} className="card-hover p-6 bg-card rounded-2xl border border-border h-full">
+            <h3 className="text-xl font-bold mb-4">Eligibility Breakdown</h3>
+            <div className="space-y-4">
+              <div className="relative h-[280px]">
+                <Plot
+                  data={[
+                    {
+                      labels: classificationCards.map(c => c.shortLabel),
+                      values: classificationCards.map(c => services[c.id].length),
+                      type: 'pie',
+                      marker: {
+                        colors: classificationCards.map(c => c.color),
+                        line: { color: 'hsl(0, 0%, 100%)', width: 2 },
+                      },
+                      textinfo: 'label+percent',
+                      textposition: 'inside',
+                      textfont: { 
+                        size: 10, 
+                        color: '#fff',
+                        weight: 600,
+                        family: "Inter, sans-serif"
+                      },
+                      hovertemplate: '<b>%{label}</b><br>%{value} services (%{percent})<extra></extra>',
+                      hole: 0.45,
+                    },
+                  ]}
+                  layout={{
+                    height: 280,
+                    margin: { l: 5, r: 5, t: 5, b: 5 },
+                    paper_bgcolor: 'transparent',
+                    showlegend: false,
+                    font: { family: "Inter, sans-serif" },
+                  }}
+                  config={{ displayModeBar: false, responsive: true }}
+                  className="w-full"
+                />
               </div>
-              <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20">
-                <div className="text-xs text-destructive/80 font-medium mb-1">Not Eligible</div>
-                <div className="text-3xl font-bold text-destructive">{stats.notEligible}</div>
-                <div className="text-xs text-destructive/60 mt-1">{stats.notEligiblePercent}% of total</div>
-              </div>
-              <div className="col-span-2 p-4 rounded-xl bg-muted/30 border border-border">
-                <div className="text-xs text-muted-foreground font-medium mb-1">Category</div>
-                <div className="text-xl font-bold text-foreground">{selectedCategory}</div>
-                <div className="text-xs text-muted-foreground mt-1">Current selection</div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-4 rounded-xl bg-success/10 border border-success/20">
+                  <div className="text-xs text-success/80 font-medium mb-1">Eligible</div>
+                  <div className="text-3xl font-bold text-success">{stats.eligible}</div>
+                  <div className="text-xs text-success/60 mt-1">{stats.eligiblePercent}% of total</div>
+                </div>
+                <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20">
+                  <div className="text-xs text-destructive/80 font-medium mb-1">Not Eligible</div>
+                  <div className="text-3xl font-bold text-destructive">{stats.notEligible}</div>
+                  <div className="text-xs text-destructive/60 mt-1">{stats.notEligiblePercent}% of total</div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
     </motion.div>
   );
 }

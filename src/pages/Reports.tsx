@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
-import { FileText, Download } from "lucide-react";
+import { FileText, Download, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Accordion,
@@ -8,10 +10,100 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import Plot from "react-plotly.js";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+// Mock eligibility data - replace with actual JSON imports when available
+const unstableEligibilityData = {
+  data: [
+    {
+      x: ['2023-01', '2023-02', '2023-03', '2023-04', '2023-05', '2023-06', '2023-07', '2023-08', '2023-09', '2023-10', '2023-11', '2023-12'],
+      y: [12000, 8500, 15000, 6000, 18000, 4000, 16000, 3000, 14000, 7000, 19000, 5000],
+      type: 'scatter',
+      mode: 'lines+markers',
+      name: 'Actual Spend',
+      line: { color: '#ef4444', width: 3 },
+      marker: { size: 8 }
+    }
+  ],
+  layout: {
+    title: { text: '<b>Clearly not eligible due to unstable or erratic usage (>12K, Unstable / Erratic)</b>' },
+    xaxis: { title: 'Month' },
+    yaxis: { title: 'Spend ($)' },
+    showlegend: true,
+    margin: { t: 60, r: 20, b: 60, l: 60 }
+  }
+};
+
+const stableEligibilityData = {
+  data: [
+    {
+      x: ['Jan 2025', 'Feb 2025', 'Mar 2025', 'Apr 2025', 'May 2025', 'Jun 2025', 'Jul 2025', 'Aug 2025', 'Sep 2025', 'Oct 2025'],
+      y: [1500, 1600, 2000, 1800, 1900, 2000, 1700, 1700, 2500, 2500],
+      type: 'scatter',
+      mode: 'lines',
+      name: 'Actual Spend',
+      line: { 
+        color: '#10b981', 
+        width: 3,
+        shape: 'spline',
+        smoothing: 1.3
+      },
+      fill: 'tozeroy',
+      fillcolor: 'rgba(16, 185, 129, 0.25)'
+    }
+  ],
+  layout: {
+    title: { text: '<b>Eligible for forecasting — costs are stable (>12K, Stable High Spend)</b>' },
+    xaxis: { title: 'Month' },
+    yaxis: { title: 'Spend amount (€)', tickprefix: '€', tickformat: ',.0f' },
+    showlegend: false,
+    margin: { t: 60, r: 20, b: 60, l: 60 }
+  }
+};
+
+const highSpendEligibilityData = {
+  data: [
+    {
+      x: ['Jan 2025', 'Feb 2025', 'Mar 2025', 'Apr 2025', 'May 2025', 'Jun 2025', 'Jul 2025', 'Aug 2025', 'Sep 2025', 'Oct 2025'],
+      y: [200, 800, 2000, 1800, 1700, 1900, 2100, 2000, 3200, 3000],
+      type: 'scatter',
+      mode: 'lines',
+      name: 'Actual Spend',
+      line: { 
+        color: '#8b5cf6', 
+        width: 3,
+        shape: 'spline',
+        smoothing: 1.3
+      },
+      fill: 'tozeroy',
+      fillcolor: 'rgba(139, 92, 246, 0.3)'
+    }
+  ],
+  layout: {
+    title: { text: '<b>Eligible for forecasting even if trend slightly decreasing (>20K, High Spend)</b>' },
+    xaxis: { title: 'Month' },
+    yaxis: { title: 'Spend amount (€)', tickprefix: '€', tickformat: ',.0f' },
+    showlegend: false,
+    margin: { t: 60, r: 20, b: 60, l: 60 }
+  }
+};
 
 export default function Reports() {
+  const navigate = useNavigate();
+  
+  // State for selected series for each chart
+  const [stableSeries, setStableSeries] = useState<string>("BS Series");
+  const [highSpendSeries, setHighSpendSeries] = useState<string>("Dav4/Dasv4 Series");
+  const [unstableSeries, setUnstableSeries] = useState<string>("Edsv4 Series");
+
   const handleExportPDF = () => {
     toast.success("PDF report generated", {
       description: "Downloading Azure_Forecast_Report.pdf",
@@ -21,6 +113,20 @@ export default function Reports() {
   const handleExportCSV = () => {
     toast.success("CSV report generated", {
       description: "Downloading forecast_summary.csv",
+    });
+  };
+
+  const handleViewForecasting = () => {
+    navigate("/forecast");
+  };
+
+  const handleViewChartDetail = (cardId: string, category: string = 'Analytics', service?: string) => {
+    navigate(`/classification-detail`, {
+      state: {
+        cardId: cardId,
+        category: category,
+        service: service,
+      }
     });
   };
 
@@ -44,6 +150,13 @@ export default function Reports() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button 
+            className="bg-primary hover:bg-primary/90" 
+            onClick={handleViewForecasting}
+          >
+            <TrendingUp className="h-4 w-4 mr-2" />
+            View Forecasting
+          </Button>
           <Button variant="outline" onClick={handleExportCSV}>
             <Download className="h-4 w-4 mr-2" />
             Export CSV
@@ -167,6 +280,231 @@ export default function Reports() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Eligibility Analysis Charts */}
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold mb-2">Eligibility Analysis</h2>
+          <p className="text-muted-foreground">Cost trend analysis by eligibility category</p>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Stable High Spend - Eligible */}
+          <Card className="card-hover" style={{ boxShadow: 'var(--shadow-md)' }}>
+            <CardHeader>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex-1">
+                  <CardTitle className="text-lg mb-2">
+                    {stableEligibilityData.layout.title?.text ? 
+                      stableEligibilityData.layout.title.text.replace(/<[^>]*>/g, '').replace('Eligible for forecasting, costs are stable', 'Stable High Spend') : 
+                      'Stable High Spend (>12K)'}
+                  </CardTitle>
+                  <Badge className="bg-success/10 text-success border-success/20">
+                    Eligible
+                  </Badge>
+                </div>
+                <Select value={stableSeries} onValueChange={setStableSeries}>
+                  <SelectTrigger className="w-auto h-8 px-2 text-xs min-w-[140px]">
+                    <SelectValue placeholder="Select Series" />
+                  </SelectTrigger>
+                  <SelectContent className="glass-effect max-h-[300px] bg-background z-50">
+                    <SelectItem value="BS Series">BS Series</SelectItem>
+                    <SelectItem value="Dadsv5 Series">Dadsv5 Series</SelectItem>
+                    <SelectItem value="Eav4/Easv4 Series">Eav4/Easv4 Series</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Plot
+                data={stableEligibilityData.data}
+                layout={{
+                  ...stableEligibilityData.layout,
+                  paper_bgcolor: "transparent",
+                  plot_bgcolor: "transparent",
+                  height: 350,
+                  font: {
+                    family: "Inter, sans-serif",
+                    size: 12,
+                    color: "hsl(var(--foreground))"
+                  },
+                  xaxis: {
+                    title: {
+                      text: "Month",
+                      font: { size: 12, color: "hsl(var(--foreground))" }
+                    },
+                    showgrid: true,
+                    gridcolor: "rgba(255, 255, 255, 0.08)",
+                    gridwidth: 1,
+                    color: "hsl(var(--foreground))",
+                    tickfont: { size: 11 },
+                  },
+                  yaxis: {
+                    title: {
+                      text: "Spend amount (€)",
+                      font: { size: 12, color: "hsl(var(--foreground))" }
+                    },
+                    showgrid: true,
+                    gridcolor: "rgba(255, 255, 255, 0.08)",
+                    gridwidth: 1,
+                    color: "hsl(var(--foreground))",
+                    tickprefix: "€",
+                    tickformat: ",.0f",
+                    tickfont: { size: 11 },
+                  },
+                  title: {
+                    ...stableEligibilityData.layout.title,
+                    font: { size: 14 }
+                  },
+                  hovermode: "x unified",
+                  showlegend: false,
+                }}
+                config={{ 
+                  displayModeBar: true, 
+                  displaylogo: false,
+                  responsive: true 
+                }}
+                className="w-full"
+              />
+              <div className="mt-4">
+                <Button 
+                  className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70" 
+                  onClick={() => handleViewChartDetail('stable-high', 'Analytics', stableSeries)}
+                >
+                  View
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* High Spend (>20K) - Eligible */}
+          <Card className="card-hover" style={{ boxShadow: 'var(--shadow-md)' }}>
+            <CardHeader>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex-1">
+                  <CardTitle className="text-lg mb-2">
+                    {highSpendEligibilityData.layout.title?.text ? 
+                      highSpendEligibilityData.layout.title.text.replace(/<[^>]*>/g, '').replace('Eligible for forecasting even if trend slightly decreasing', 'High Spend') : 
+                      'High Spend (>20K)'}
+                  </CardTitle>
+                  <Badge className="bg-primary/10 text-primary border-primary/20">
+                    Eligible
+                  </Badge>
+                </div>
+                <Select value={highSpendSeries} onValueChange={setHighSpendSeries}>
+                  <SelectTrigger className="w-auto h-8 px-2 text-xs min-w-[140px]">
+                    <SelectValue placeholder="Select Series" />
+                  </SelectTrigger>
+                  <SelectContent className="glass-effect max-h-[300px] bg-background z-50">
+                    <SelectItem value="Dav4/Dasv4 Series">Dav4/Dasv4 Series</SelectItem>
+                    <SelectItem value="Dv2/DSv2 Series">Dv2/DSv2 Series</SelectItem>
+                    <SelectItem value="Dv3/DSv3 Series">Dv3/DSv3 Series</SelectItem>
+                    <SelectItem value="FSv2 Series">FSv2 Series</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Plot
+                data={highSpendEligibilityData.data}
+                layout={{
+                  ...highSpendEligibilityData.layout,
+                  paper_bgcolor: "transparent",
+                  plot_bgcolor: "transparent",
+                  height: 350,
+                  font: {
+                    family: "Inter, sans-serif",
+                    size: 12,
+                    color: "hsl(var(--foreground))"
+                  },
+                  xaxis: {
+                    title: {
+                      text: "Month",
+                      font: { size: 12, color: "hsl(var(--foreground))" }
+                    },
+                    showgrid: true,
+                    gridcolor: "rgba(255, 255, 255, 0.08)",
+                    gridwidth: 1,
+                    color: "hsl(var(--foreground))",
+                    tickfont: { size: 11 },
+                  },
+                  yaxis: {
+                    title: {
+                      text: "Spend amount (€)",
+                      font: { size: 12, color: "hsl(var(--foreground))" }
+                    },
+                    showgrid: true,
+                    gridcolor: "rgba(255, 255, 255, 0.08)",
+                    gridwidth: 1,
+                    color: "hsl(var(--foreground))",
+                    tickprefix: "€",
+                    tickformat: ",.0f",
+                    tickfont: { size: 11 },
+                    range: [0, 3500],
+                  },
+                  title: {
+                    ...highSpendEligibilityData.layout.title,
+                    font: { size: 14 }
+                  },
+                  hovermode: "x unified",
+                  showlegend: false,
+                }}
+                config={{ 
+                  displayModeBar: true, 
+                  displaylogo: false,
+                  responsive: true 
+                }}
+                className="w-full"
+              />
+              <div className="mt-4">
+                <Button 
+                  className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70" 
+                  onClick={() => handleViewChartDetail('high-spend', 'Analytics', highSpendSeries)}
+                >
+                  View
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Unstable/Erratic - Not Eligible */}
+          <Card className="card-hover lg:col-span-2" style={{ boxShadow: 'var(--shadow-md)' }}>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">
+                  {unstableEligibilityData.layout.title?.text ? 
+                    unstableEligibilityData.layout.title.text.replace(/<[^>]*>/g, '').replace('Clearly not eligible due to unstable or erratic usage', 'Unstable / Erratic') : 
+                    'Unstable / Erratic (>12K)'}
+                </CardTitle>
+                <Badge className="bg-destructive/10 text-destructive border-destructive/20">
+                  Not Eligible
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Plot
+                data={unstableEligibilityData.data}
+                layout={{
+                  ...unstableEligibilityData.layout,
+                  paper_bgcolor: "transparent",
+                  plot_bgcolor: "transparent",
+                  height: 350,
+                  title: {
+                    ...unstableEligibilityData.layout.title,
+                    font: { size: 14 }
+                  }
+                }}
+                config={{ 
+                  displayModeBar: true, 
+                  displaylogo: false,
+                  responsive: true 
+                }}
+                className="w-full"
+              />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       {/* Documentation */}
       <Card>

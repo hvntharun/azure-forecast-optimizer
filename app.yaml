@@ -1,0 +1,14 @@
+name: azure-forecast-optimizer
+description: Azure cost forecasting & reservation insights
+entrypoint: dist/index.html
+runtime:
+  type: static
+artifacts:
+  - path: dist
+    include:
+      - index.html
+      - assets/**
+      - JSON/**
+      - favicon.ico
+      - Tetrapack.png
+version: 1.0.0

@@ -10,7 +10,7 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const location = useLocation();
-  const validRoutes = ['/', '/dashboard/azure-vm', '/dashboard/databricks', '/dashboard/azure-storage', '/data', '/forecast', '/reservations', '/reports'];
+  const validRoutes = ['/', '/dashboard/azure-vm', '/dashboard/databricks', '/dashboard/azure-storage', '/data', '/forecast', '/classification-detail', '/reservations', '/reports'];
   const isValidRoute = validRoutes.includes(location.pathname);
   const isLandingPage = location.pathname === '/';
 

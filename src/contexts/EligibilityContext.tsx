@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { ClassificationCategory } from '@/lib/classificationData';
+import * as React from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { ClassificationCategory } from '../lib/classificationData';
 
 interface EligibilityState {
   eligibilityChecked: boolean;

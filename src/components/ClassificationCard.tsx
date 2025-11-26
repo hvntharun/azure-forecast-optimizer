@@ -145,7 +145,7 @@ export const ClassificationCard: React.FC<ClassificationCardProps> = ({
 
   if (loading) {
     return (
-      <Card className="h-[420px] border border-border bg-card hover:shadow-lg transition-all duration-300">
+      <Card className="min-h-[420px] border border-border bg-card hover:shadow-lg transition-all duration-300">
         <CardContent className="p-6 h-full flex items-center justify-center">
           <div className="text-center space-y-3">
             <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
@@ -158,7 +158,7 @@ export const ClassificationCard: React.FC<ClassificationCardProps> = ({
 
   if (error) {
     return (
-      <Card className="h-[420px] border border-destructive/20 bg-card hover:shadow-lg transition-all duration-300">
+      <Card className="min-h-[420px] border border-destructive/20 bg-card hover:shadow-lg transition-all duration-300">
         <CardContent className="p-6 h-full flex items-center justify-center">
           <div className="text-center space-y-3">
             <AlertCircle className="h-8 w-8 text-destructive mx-auto" />
@@ -177,7 +177,7 @@ export const ClassificationCard: React.FC<ClassificationCardProps> = ({
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
     >
       <Card 
-        className={`h-[420px] cursor-pointer transition-all duration-300 border ${
+        className={`min-h-[420px] cursor-pointer transition-all duration-300 border ${
           isSelected 
             ? `border-2 ${card.color.replace('text-', 'border-')} shadow-lg ring-2 ring-opacity-20` 
             : 'border-border hover:border-primary/30 hover:shadow-lg'

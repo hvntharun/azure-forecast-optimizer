@@ -12,14 +12,15 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      buffer: "buffer" 
     },
   },
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
-    // Important: Use relative paths for Databricks hosting
+
     base: './',
-    // Optimize for static hosting
+    
     rollupOptions: {
       output: {
         manualChunks: {
@@ -32,6 +33,10 @@ export default defineConfig(({ mode }) => ({
   },
   // Ensure environment variables are available
   define: {
-    'process.env': process.env
+    'process.env': process.env,
+    global: 'globalThis',
+  },
+  optimizeDeps: {
+    include: ['buffer']
   }
 }));

@@ -1,6 +1,24 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
-import { RefreshCw, BarChart3, TrendingUp, Shield, Zap, ArrowRight, CheckCircle2, Sparkles, Target, Loader2, Database, Activity, Brain, FileText, PieChart, Filter } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import {
+  RefreshCw,
+  BarChart3,
+  TrendingUp,
+  Shield,
+  Zap,
+  ArrowRight,
+  CheckCircle2,
+  Sparkles,
+  Target,
+  Loader2,
+  Database,
+  Activity,
+  Brain,
+  FileText,
+  PieChart,
+  Calendar,
+  ChevronDown
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -84,7 +102,17 @@ export default function Dashboard() {
   const [cardSeriesSelections, setCardSeriesSelections] = useState<Record<ClassificationType, string[]>>({} as Record<ClassificationType, string[]>);
   const [aggregatedStats, setAggregatedStats] = useState<AggregatedStats | null>(null);
   const [dataLoading, setDataLoading] = useState(false);
-  
+
+  // Inline date controls (shown in same row as model/category pills)
+  const [startDate, setStartDate] = useState<string | null>(null);
+  const [endDate, setEndDate] = useState<string | null>(null);
+  const [dateError, setDateError] = useState<string | null>(null);
+  const [modelError, setModelError] = useState<string | null>(null);
+
+  // refs to date inputs so chevron can trigger date picker
+  const startRef = useRef<HTMLInputElement | null>(null);
+  const endRef = useRef<HTMLInputElement | null>(null);
+
   // Use global eligibility context
   const {
     state: { eligibilityChecked, selectedCategory, isLoading, currentStep },
@@ -102,12 +130,13 @@ export default function Dashboard() {
       const loadData = async () => {
         setDataLoading(true);
         try {
+          // If you later want to pass startDate/endDate to the loader, modify loadAllEligibilityData accordingly
           const data = await loadAllEligibilityData();
           setAllEligibilityData(data);
-          
+
           const stats = getAggregatedStats(data);
           setAggregatedStats(stats);
-          
+
           // Initialize series selections for all cards
           const initialSelections: Record<ClassificationType, string[]> = {} as Record<ClassificationType, string[]>;
           Object.entries(data).forEach(([type, eligibilityData]) => {
@@ -118,14 +147,14 @@ export default function Dashboard() {
               .map(stat => stat.name);
           });
           setCardSeriesSelections(initialSelections);
-          
+
         } catch (error) {
           console.error('Error loading eligibility data:', error);
         } finally {
           setDataLoading(false);
         }
       };
-      
+
       loadData();
     }
   }, [shouldShowResults, allEligibilityData]);
@@ -139,7 +168,39 @@ export default function Dashboard() {
     setTimeout(() => setRefreshing(false), 1500);
   };
 
+  // Validate inputs and start analysis
   const handleCheckEligibility = () => {
+    // reset errors
+    setModelError(null);
+    setDateError(null);
+
+    let hasError = false;
+
+    // model/category must be selected
+    if (!selectedCategory) {
+      setModelError('Please select a model.');
+      hasError = true;
+    }
+
+    // both dates required
+    if (!startDate || !endDate) {
+      setDateError('Please select both start and end dates.');
+      hasError = true;
+    } else {
+      const s = new Date(startDate);
+      const e = new Date(endDate);
+      if (e < s) {
+        setDateError('End date must be the same or after Start date.');
+        hasError = true;
+      }
+    }
+
+    if (hasError) {
+      // don't start the loading sequence
+      return;
+    }
+
+    // If validation passed, kick off the analysis
     setIsLoading(true);
     setCurrentStep(0);
   };
@@ -163,21 +224,13 @@ export default function Dashboard() {
     return () => clearTimeout(timer);
   }, [isLoading, currentStep, selectedCategory, setIsLoading, setCurrentStep, setEligibilityChecked]);
 
-  // Check if we should show results immediately when component mounts
-  useEffect(() => {
-    if (shouldShowResults() && !isLoading) {
-      // Results are available and still valid, show them immediately
-      console.log('Restoring previous eligibility analysis results');
-    }
-  }, [shouldShowResults, isLoading]);
-
   const handleViewCard = (cardId: ClassificationType, service: string) => {
-    navigate('/classification-detail', { 
-      state: { 
-        category: selectedCategory, 
-        cardId, 
-        service 
-      } 
+    navigate('/classification-detail', {
+      state: {
+        category: selectedCategory,
+        cardId,
+        service
+      }
     });
   };
 
@@ -209,7 +262,7 @@ export default function Dashboard() {
       };
     }
 
-    // If a specific card is selected, show that card's individual series distribution (unchanged behavior)
+    // If a specific card is selected, show that card's individual series distribution
     if (selectedCardId && allEligibilityData[selectedCardId]) {
       const eligibilityData = allEligibilityData[selectedCardId];
       const seriesStats = calculateSeriesStats(eligibilityData);
@@ -230,7 +283,7 @@ export default function Dashboard() {
       );
     }
 
-    // Aggregate by the four classification types (cards) instead of all individual series
+    // Aggregate by the four classification types (cards)
     const classificationOrder: ClassificationType[] = [
       'stable-high',
       'high-spend',
@@ -257,16 +310,16 @@ export default function Dashboard() {
 
       labels.push(
         type === 'stable-high' ? 'Eligible - Stable High Spend'
-        : type === 'high-spend' ? 'Eligible - High Spend Trending'
-        : type === 'unstable' ? 'Not Eligible - Unstable Usage'
-        : 'Not Eligible - Low Spend'
+          : type === 'high-spend' ? 'Eligible - High Spend Trending'
+            : type === 'unstable' ? 'Not Eligible - Unstable Usage'
+              : 'Not Eligible - Low Spend'
       );
       values.push(totalCost);
       colors.push(
         type === 'stable-high' ? '#10B981'
-        : type === 'high-spend' ? '#3B82F6'
-        : type === 'unstable' ? '#EF4444'
-        : '#F59E0B'
+          : type === 'high-spend' ? '#3B82F6'
+            : type === 'unstable' ? '#EF4444'
+              : '#F59E0B'
       );
       hoverData.push(
         `Category: ${labels[labels.length - 1]}<br>` +
@@ -287,11 +340,32 @@ export default function Dashboard() {
     setAllEligibilityData({} as Record<ClassificationType, EligibilityData>);
     setCardSeriesSelections({} as Record<ClassificationType, string[]>);
     setAggregatedStats(null);
+    // clear model error when user changes category
+    setModelError(null);
   }, [selectedCategory]);
 
-  // Determine what to show based on state
   const showResults = shouldShowResults() && !isLoading;
   const showPreEligibility = !showResults && !isLoading;
+
+  // small helper to format date for display dd-mm-yyyy
+  const formatDateDisplay = (isoDate: string | null) => {
+    if (!isoDate) return "";
+    const d = new Date(isoDate);
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    return `${dd}-${mm}-${yyyy}`;
+  };
+
+  // helper to open native picker when chevron clicked (showPicker supported in some browsers)
+  const openDatePicker = (ref: HTMLInputElement | null) => {
+    if (!ref) return;
+    const anyRef = ref as any;
+    if (typeof anyRef.showPicker === 'function') {
+      try { anyRef.showPicker(); return; } catch { /* ignore */ }
+    }
+    ref.focus();
+  };
 
   return (
     <div className="min-h-[calc(100vh-12rem)] flex flex-col bg-background">
@@ -301,7 +375,7 @@ export default function Dashboard() {
         animate="show"
         className="space-y-8 flex-1"
       >
-        {/* Enhanced Header Section with Real-time Stats */}
+        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6">
           <div className="flex-1 space-y-1">
             <h1 className="text-3xl font-bold text-foreground leading-tight">
@@ -329,18 +403,10 @@ export default function Dashboard() {
               )}
             </div>
           </div>
-          {/* Action Buttons */}
+
           <div className="flex gap-3 flex-shrink-0">
-            <Button 
-              onClick={() => navigate('/forecast')} 
-              variant="outline"
-              className="bg-background hover:bg-accent/50 border-border text-foreground rounded-lg px-4"
-            >
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Model Performance
-            </Button>
-            <Button 
-              onClick={handleRefresh} 
+            <Button
+              onClick={handleRefresh}
               disabled={refreshing}
               variant="outline"
               className="bg-background hover:bg-accent/50 border-border text-foreground rounded-lg px-4"
@@ -351,12 +417,94 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Category Selector */}
+        {/* ===== CATEGORY SELECTOR + INLINE DATES (keeps CategorySelector rendering intact) ===== */}
         <motion.div variants={item}>
-          <CategorySelector selected={selectedCategory} onSelect={setSelectedCategory} />
-        </motion.div>
+          <div className="flex items-center justify-between gap-4">
+            {/* LEFT: render CategorySelector exactly as before (do not wrap it in another rounded pill) */}
+            <div className="flex items-center">
+              <CategorySelector selected={selectedCategory} onSelect={setSelectedCategory} />
+            </div>
 
-        {/* Loading Steps Section */}
+            {/* RIGHT: inline date controls styled to match the pill row (sibling to selector) */}
+            <div className="flex items-center">
+              <div className="rounded-full bg-card/30 border border-border px-4 py-2 flex items-center gap-4 shadow-sm">
+                {/* Start */}
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground hidden sm:inline">Start</span>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <input
+                      ref={startRef}
+                      id="startDate"
+                      type="date"
+                      value={startDate ?? ""}
+                      onChange={(e) => {
+                        setStartDate(e.target.value || null);
+                        setDateError(null);
+                      }}
+                      className="pl-8 pr-8 py-1.5 rounded-md border border-transparent bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      aria-label="Start date"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => openDatePicker(startRef.current)}
+                      className="absolute inset-y-0 right-0 pr-2 flex items-center"
+                      aria-label="Open start date picker"
+                    >
+                      <ChevronDown className="h-4 w-4 text-muted-foreground cursor-pointer" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="h-6 border-l border-border/40" />
+
+                {/* End */}
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground hidden sm:inline">End</span>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <input
+                      ref={endRef}
+                      id="endDate"
+                      type="date"
+                      value={endDate ?? ""}
+                      onChange={(e) => {
+                        setEndDate(e.target.value || null);
+                        setDateError(null);
+                      }}
+                      className="pl-8 pr-8 py-1.5 rounded-md border border-transparent bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      aria-label="End date"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => openDatePicker(endRef.current)}
+                      className="absolute inset-y-0 right-0 pr-2 flex items-center"
+                      aria-label="Open end date picker"
+                    >
+                      <ChevronDown className="h-4 w-4 text-muted-foreground cursor-pointer" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* spacer */}
+                <div className="w-2" />
+              </div>
+            </div>
+          </div>
+
+          {/* Inline errors */}
+          <div className="mt-2 flex items-start gap-4">
+            {modelError && <div className="text-xs text-destructive">{modelError}</div>}
+            {dateError && <div className="text-xs text-destructive">{dateError}</div>}
+          </div>
+        </motion.div>
+        {/* ===== END CATEGORY SELECTOR + INLINE DATES ===== */}
+
+        {/* Loading steps (same as before) */}
         {isLoading && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -389,20 +537,20 @@ export default function Dashboard() {
                   <motion.div
                     key={step.id}
                     initial={{ opacity: 0, y: 20 }}
-                    animate={{ 
-                      opacity: 1, 
+                    animate={{
+                      opacity: 1,
                       y: 0,
                       scale: isCurrent ? 1.05 : 1
                     }}
                     transition={{ delay: index * 0.1 }}
                   >
-                    <Card 
+                    <Card
                       className={`h-full transition-all duration-500 ${
                         isActive
                           ? 'bg-primary/5 border-primary/30 shadow-lg'
                           : isCurrent
-                          ? 'bg-primary/10 border-primary/40 shadow-xl ring-2 ring-primary/20'
-                          : 'bg-card/50 border-border/30 opacity-60'
+                            ? 'bg-primary/10 border-primary/40 shadow-xl ring-2 ring-primary/20'
+                            : 'bg-card/50 border-border/30 opacity-60'
                       }`}
                     >
                       <CardContent className="p-6">
@@ -411,8 +559,8 @@ export default function Dashboard() {
                             isActive
                               ? 'bg-primary/20'
                               : isCurrent
-                              ? 'bg-primary/30 animate-pulse'
-                              : 'bg-muted'
+                                ? 'bg-primary/30 animate-pulse'
+                                : 'bg-muted'
                           }`}>
                             {isPending ? (
                               <StepIcon className="h-6 w-6 text-muted-foreground" />
@@ -447,7 +595,7 @@ export default function Dashboard() {
                                   isActive ? 'bg-success' : isCurrent ? 'bg-primary' : 'bg-muted'
                                 }`}
                                 initial={{ width: 0 }}
-                                animate={{ 
+                                animate={{
                                   width: isActive ? '100%' : isCurrent ? '60%' : '0%'
                                 }}
                                 transition={{ duration: step.duration / 1000, ease: 'easeInOut' }}
@@ -464,18 +612,14 @@ export default function Dashboard() {
           </motion.div>
         )}
 
-        {/* Enhanced Pre-Eligibility Section */}
+        {/* Pre-eligibility hero and model info (unchanged) */}
         {showPreEligibility && (
-          <motion.div 
-            variants={item} 
-            className="space-y-10"
-          >
-            {/* Hero Section */}
+          <motion.div variants={item} className="space-y-10">
+            {/* Hero */}
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-accent/5 border border-primary/20 p-8 md:p-12">
-              {/* Background decorative elements */}
               <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
               <div className="absolute bottom-0 left-0 w-48 h-48 bg-accent/5 rounded-full blur-3xl -ml-24 -mb-24"></div>
-              
+
               <div className="relative z-10 text-center space-y-6 max-w-3xl mx-auto">
                 <motion.div
                   initial={{ scale: 0.9, opacity: 0 }}
@@ -486,35 +630,20 @@ export default function Dashboard() {
                   <Sparkles className="h-4 w-4 text-primary" />
                   <span className="text-sm font-medium text-primary">AI-Powered Cost Analysis</span>
                 </motion.div>
-                
-                <motion.h2 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="text-4xl md:text-5xl font-bold text-foreground leading-tight"
-                >
+
+                <motion.h2 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+                  className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
                   Unlock Azure Cost Savings
                 </motion.h2>
-                
-                <motion.p 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto"
-                >
+
+                <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+                  className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
                   Discover which Azure VMs are eligible for Reserved Instance pricing. Our intelligent analysis identifies opportunities to optimize your cloud spending using advanced machine learning models.
                 </motion.p>
 
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <Button
-                    onClick={handleCheckEligibility}
-                    size="lg"
-                    className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-semibold px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 group"
-                  >
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                  <Button onClick={handleCheckEligibility} size="lg"
+                    className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-semibold px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 group">
                     Check Eligibility Now
                     <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
@@ -522,14 +651,10 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Feature Cards Grid */}
+            {/* Feature Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <motion.div
-                variants={item}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-              >
+              {/* three cards (unchanged) */}
+              <motion.div variants={item} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
                 <Card className="h-full border-border/50 bg-card/50 hover:bg-card hover:border-primary/30 transition-all duration-300 hover:shadow-lg group">
                   <CardHeader>
                     <div className="flex items-center gap-3 mb-2">
@@ -540,9 +665,7 @@ export default function Dashboard() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      Automatically categorize VMs based on spending patterns, stability, and eligibility criteria using advanced ML algorithms.
-                    </p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">Automatically categorize VMs based on spending patterns, stability, and eligibility criteria using advanced ML algorithms.</p>
                     <div className="mt-4 flex flex-wrap gap-2">
                       <Badge variant="outline" className="text-xs">Stable High</Badge>
                       <Badge variant="outline" className="text-xs">High Spend</Badge>
@@ -552,12 +675,7 @@ export default function Dashboard() {
                 </Card>
               </motion.div>
 
-              <motion.div
-                variants={item}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-              >
+              <motion.div variants={item} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
                 <Card className="h-full border-border/50 bg-card/50 hover:bg-card hover:border-primary/30 transition-all duration-300 hover:shadow-lg group">
                   <CardHeader>
                     <div className="flex items-center gap-3 mb-2">
@@ -568,9 +686,7 @@ export default function Dashboard() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      Get accurate predictions of future spending and identify optimal timing for Reserved Instance purchases with detailed forecasts.
-                    </p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">Get accurate predictions of future spending and identify optimal timing for Reserved Instance purchases with detailed forecasts.</p>
                     <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
                       <CheckCircle2 className="h-3.5 w-3.5 text-success" />
                       <span>ARIMA, Random Forest, XGBoost models</span>
@@ -579,12 +695,7 @@ export default function Dashboard() {
                 </Card>
               </motion.div>
 
-              <motion.div
-                variants={item}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-              >
+              <motion.div variants={item} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
                 <Card className="h-full border-border/50 bg-card/50 hover:bg-card hover:border-primary/30 transition-all duration-300 hover:shadow-lg group">
                   <CardHeader>
                     <div className="flex items-center gap-3 mb-2">
@@ -595,9 +706,7 @@ export default function Dashboard() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      Discover how much you can save with Reserved Instances. View detailed breakdowns and recommendations for each VM series.
-                    </p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">Discover how much you can save with Reserved Instances. View detailed breakdowns and recommendations for each VM series.</p>
                     <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
                       <Zap className="h-3.5 w-3.5 text-primary" />
                       <span>Up to 72% savings with RI</span>
@@ -607,14 +716,9 @@ export default function Dashboard() {
               </motion.div>
             </div>
 
-            {/* Model Selection Info */}
-            <motion.div
-              variants={item}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7 }}
-            >
-              <Card className="border-border/50 bg-card/30">
+            {/* Model selection card (unchanged) */}
+            <motion.div variants={item} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
+              <Card className="">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div>
@@ -626,7 +730,7 @@ export default function Dashboard() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2  gap-4 mt-4">
                     {selectedCategory === 'Analytics' && (
                       <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
                         <div className="flex items-center gap-2 mb-2">
@@ -655,6 +759,7 @@ export default function Dashboard() {
                       </div>
                     )}
                   </div>
+
                   <div className="mt-6 p-4 rounded-lg bg-muted/30 border border-border/50">
                     <div className="flex items-start gap-3">
                       <div className="p-1.5 rounded bg-primary/10">
@@ -677,167 +782,115 @@ export default function Dashboard() {
           </motion.div>
         )}
 
-      {/* Classification Cards and Pie Chart - Shown when results are available */}
-      <AnimatePresence mode="wait">
-        {showResults && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            className="space-y-8"
-          >
-          {/* Charts Section */}
-          <motion.div 
-            variants={item}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-            className="grid grid-cols-1 xl:grid-cols-3 gap-6"
-          >
-            {/* Left side - Classification Cards in 2x2 grid */}
-            <div className="xl:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-5">
-              {classificationCards.map((card, index) => (
-                <motion.div 
-                  key={card.id} 
-                  variants={item}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: 0.15 + (index * 0.05) }}
-                >
-                  <ClassificationCard
-                    card={card}
-                    category={selectedCategory}
-                    onView={handleViewCard}
-                    isSelected={selectedCardId === card.id}
-                    onClick={() => handleCardClick(card.id)}
-                    onSeriesSelectionChange={handleSeriesSelectionChange}
-                  />
-                </motion.div>
-              ))}
-            </div>
+        {/* Results (unchanged) */}
+        <AnimatePresence mode="wait">
+          {showResults && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }} className="space-y-8">
+              <motion.div variants={item} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }} className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <div className="xl:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {classificationCards.map((card, index) => (
+                    <motion.div key={card.id} variants={item} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.15 + (index * 0.05) }}>
+                      <ClassificationCard card={card} category={selectedCategory} onView={handleViewCard} isSelected={selectedCardId === card.id} onClick={() => handleCardClick(card.id)} onSeriesSelectionChange={handleSeriesSelectionChange} />
+                    </motion.div>
+                  ))}
+                </div>
 
-            {/* Right side - Pie Chart */}
-            <motion.div 
-              variants={item}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.25 }}
-              className="xl:col-span-1"
-            >
-              <Card className="h-full border border-border bg-card shadow-sm">
-                <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg font-semibold text-foreground">
-                      {selectedCardId ? 'Series Distribution' : 'Cost Distribution'}
-                    </CardTitle>
-                    {selectedCardId && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSelectedCardId(null)}
-                        className="text-xs h-7"
-                      >
-                        Clear Filter
-                      </Button>
-                    )}
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {selectedCardId 
-                      ? `Series breakdown for ${classificationCards.find(c => c.id === selectedCardId)?.title}`
-                      : 'Interactive cost breakdown across all categories'
-                    }
-                  </p>
-                </CardHeader>
-                
-                <CardContent className="p-6 pt-0">
-                  {dataLoading ? (
-                    <div className="h-[300px] flex items-center justify-center">
-                      <div className="text-center space-y-3">
-                        <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto" />
-                        <p className="text-sm text-muted-foreground">Loading chart data...</p>
+                <motion.div variants={item} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.25 }} className="xl:col-span-1">
+                  <Card className="h-full border border-border bg-card shadow-sm">
+                    <CardHeader className="pb-4">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg font-semibold text-foreground">
+                          {selectedCardId ? 'Series Distribution' : 'Cost Distribution'}
+                        </CardTitle>
+                        {selectedCardId && <Button variant="ghost" size="sm" onClick={() => setSelectedCardId(null)} className="text-xs h-7">Clear Filter</Button>}
                       </div>
-                    </div>
-                  ) : pieChartData.labels.length > 0 ? (
-                    <div className="space-y-4">
-                      <div className="relative h-[280px] flex items-center justify-center">
-                        <Plot
-                          key={`dynamic-pie-${selectedCardId || 'all'}-${JSON.stringify(cardSeriesSelections)}`}
-                          data={[
-                            {
-                              labels: pieChartData.labels,
-                              values: pieChartData.values,
-                              type: 'pie',
-                              marker: {
-                                colors: pieChartData.colors,
-                                line: { color: 'hsl(var(--background))', width: 2 },
-                              },
-                              textinfo: 'label+percent',
-                              textposition: 'auto',
-                              textfont: { 
-                                size: 10, 
-                                color: 'hsl(var(--foreground))',
-                                family: "Inter, sans-serif"
-                              },
-                              hovertemplate: '<b>%{label}</b><br>' +
-                                           'Cost: €%{value:,.0f}<br>' +
-                                           '<i>%{percent}</i><br>' +
-                                           '<extra></extra>',
-                              hole: 0.4,
-                            },
-                          ]}
-                          layout={{
-                            height: 280,
-                            margin: { l: 10, r: 10, t: 10, b: 10 },
-                            paper_bgcolor: 'transparent',
-                            plot_bgcolor: 'transparent',
-                            showlegend: false,
-                            font: { family: "Inter, sans-serif" },
-                            annotations: [{
-                              text: selectedCardId ? 'Series<br>Cost' : 'Total<br>Cost',
-                              x: 0.5,
-                              y: 0.5,
-                              font: { size: 12, color: 'hsl(var(--muted-foreground))' },
-                              showarrow: false,
-                            }],
-                          }}
-                          config={{ displayModeBar: false, responsive: true }}
-                          className="w-full"
-                        />
-                      </div>
-                      
-                      {/* Legend */}
-                      <div className="max-h-32 overflow-y-auto space-y-2">
-                        {pieChartData.labels.map((label, index) => (
-                          <div key={label} className="flex items-center gap-2 text-xs">
-                            <div 
-                              className="w-3 h-3 rounded-full flex-shrink-0"
-                              style={{ backgroundColor: pieChartData.colors[index] }}
-                            />
-                            <span className="truncate flex-1">{label}</span>
-                            <span className="font-medium text-muted-foreground">
-                              €{pieChartData.values[index]?.toLocaleString()}
-                            </span>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedCardId ? `Series breakdown for ${classificationCards.find(c => c.id === selectedCardId)?.title}` : 'Interactive cost breakdown across all categories'}
+                      </p>
+                    </CardHeader>
+
+                    <CardContent className="p-6 pt-0">
+                      {dataLoading ? (
+                        <div className="h-[300px] flex items-center justify-center">
+                          <div className="text-center space-y-3">
+                            <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto" />
+                            <p className="text-sm text-muted-foreground">Loading chart data...</p>
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="h-[300px] flex items-center justify-center">
-                      <div className="text-center space-y-3">
-                        <PieChart className="h-8 w-8 text-muted-foreground mx-auto" />
-                        <p className="text-sm text-muted-foreground">No data available for visualization</p>
-                        <p className="text-xs text-muted-foreground">Try selecting different series or categories</p>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                        </div>
+                      ) : pieChartData.labels.length > 0 ? (
+                        <div className="space-y-4">
+                          <div className="relative h-[280px] flex items-center justify-center">
+                            <Plot
+                              key={`dynamic-pie-${selectedCardId || 'all'}-${JSON.stringify(cardSeriesSelections)}`}
+                              data={[
+                                {
+                                  labels: pieChartData.labels,
+                                  values: pieChartData.values,
+                                  type: 'pie',
+                                  marker: {
+                                    colors: pieChartData.colors,
+                                    line: { color: 'hsl(var(--background))', width: 2 },
+                                  },
+                                  textinfo: 'label+percent',
+                                  textposition: 'auto',
+                                  textfont: {
+                                    size: 10,
+                                    color: 'hsl(var(--foreground))',
+                                    family: "Inter, sans-serif"
+                                  },
+                                  hovertemplate: '<b>%{label}</b><br>' +
+                                    'Cost: €%{value:,.0f}<br>' +
+                                    '<i>%{percent}</i><br>' +
+                                    '<extra></extra>',
+                                  hole: 0.4,
+                                },
+                              ]}
+                              layout={{
+                                height: 280,
+                                margin: { l: 10, r: 10, t: 10, b: 10 },
+                                paper_bgcolor: 'transparent',
+                                plot_bgcolor: 'transparent',
+                                showlegend: false,
+                                font: { family: "Inter, sans-serif" },
+                                annotations: [{
+                                  text: selectedCardId ? 'Series<br>Cost' : 'Total<br>Cost',
+                                  x: 0.5,
+                                  y: 0.5,
+                                  font: { size: 12, color: 'hsl(var(--muted-foreground))' },
+                                  showarrow: false,
+                                }],
+                              }}
+                              config={{ displayModeBar: false, responsive: true }}
+                              className="w-full"
+                            />
+                          </div>
+
+                          <div className="max-h-32 overflow-y-auto space-y-2">
+                            {pieChartData.labels.map((label, index) => (
+                              <div key={label} className="flex items-center gap-2 text-xs">
+                                <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: pieChartData.colors[index] }} />
+                                <span className="truncate flex-1">{label}</span>
+                                <span className="font-medium text-muted-foreground">€{pieChartData.values[index]?.toLocaleString()}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="h-[300px] flex items-center justify-center">
+                          <div className="text-center space-y-3">
+                            <PieChart className="h-8 w-8 text-muted-foreground mx-auto" />
+                            <p className="text-sm text-muted-foreground">No data available for visualization</p>
+                            <p className="text-xs text-muted-foreground">Try selecting different series or categories</p>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </motion.div>
             </motion.div>
-          </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
       </motion.div>
     </div>
   );

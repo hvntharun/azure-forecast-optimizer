@@ -147,7 +147,7 @@ export default function ClassificationDetail() {
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="glass-effect max-h-[300px] bg-background z-50">
-                  <SelectItem value="All MeterGroups">All MeterGroups</SelectItem>
+                  {/* <SelectItem value="All MeterGroups">All MeterGroups</SelectItem> */}
                   {allSeries.map(s => (
                     <SelectItem key={s} value={s}>{s}</SelectItem>
                   ))}

@@ -12,6 +12,7 @@ const dashboardOptions = [
     iconColor: "text-primary",
     route: "/dashboard/azure-vm"
   },
+
   {
     id: "databricks",
     title: "Databricks",
